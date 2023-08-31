@@ -1,6 +1,7 @@
 require 'json'
 require 'uri'
 require 'net/http'
+
 require './lib/curlify'
 
 describe Curlify do
