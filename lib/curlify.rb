@@ -27,6 +27,6 @@ class Curlify
   end
 
   def body
-    "-d #{request.body}" unless request.body.nil?
+    "-d '#{request.body}'" unless request.body.nil?
   end
 end
