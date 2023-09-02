@@ -19,6 +19,7 @@ $ bundle add curlify
 Import `curlify`, `uri` and `net/http` gems and execute curlify, see:
 
 ```python
+require 'json'
 require 'uri'
 require 'net/http'
 require 'curlify'
