@@ -12,8 +12,8 @@ class Curlify
   end
 
   def to_curl
-    return curl_request << ' --compressed' if compressed
-    return curl_request << ' --insecure' unless verify
+    return "#{curl_request} --compressed" if compressed
+    return "#{curl_request} --insecure" unless verify
 
     curl_request
   end
@@ -21,16 +21,18 @@ class Curlify
   private
 
   def curl_request
-    "curl -X #{method.upcase} #{headers} #{body} #{url}"
+    "curl -X #{http_method.upcase} #{headers} #{body} #{url}"
   end
 
   def headers
-    return context_headers(request.headers) if request.is_a?(Faraday::Request)
-
-    context_headers(request.each_header)
+    if request.is_a?(Faraday::Request)
+      context_headers(request.headers)
+    else
+      context_headers(request.each_header)
+    end
   end
 
-  def method
+  def http_method
     request.is_a?(Faraday::Request) ? request.http_method : request.method
   end
 
