@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'curlify'
-  s.version     = '1.0.1'
+  s.version     = '1.0.2'
   s.summary     = 'Hola!'
   s.description = 'The gem convert python requests object in curl command.'
   s.authors     = ['Marcus Almeida']
@@ -19,5 +19,7 @@ Gem::Specification.new do |s|
   s.rdoc_options     = ['--charset=UTF-8']
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.required_ruby_version = '>= 3.2.0'
+  s.required_ruby_version = '>= 2.7.8'
+
+  s.add_dependency 'faraday', '>= 2.0'
 end

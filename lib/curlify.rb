@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'faraday'
+
 class Curlify
   attr_reader :request, :verify, :compressed
 
@@ -10,8 +12,8 @@ class Curlify
   end
 
   def to_curl
-    return curl_request << ' --compressed' if compressed
-    return curl_request << ' --insecure' unless verify
+    return "#{curl_request} --compressed" if compressed
+    return "#{curl_request} --insecure" unless verify
 
     curl_request
   end
@@ -19,14 +21,30 @@ class Curlify
   private
 
   def curl_request
-    "curl -X #{request.method} #{headers} #{body} #{request.uri}"
+    "curl -X #{http_method.upcase} #{headers} #{body} #{url}"
   end
 
   def headers
-    request.each_header.map { |key, value| "-H '#{key}: #{value}'" }.join(' ')
+    if request.is_a?(Faraday::Request)
+      context_headers(request.headers)
+    else
+      context_headers(request.each_header)
+    end
+  end
+
+  def http_method
+    request.is_a?(Faraday::Request) ? request.http_method : request.method
+  end
+
+  def url
+    request.is_a?(Faraday::Request) ? request.path : request.uri
   end
 
   def body
     "-d '#{request.body}'" unless request.body.nil?
+  end
+
+  def context_headers(headers)
+    headers.map { |k, v| "-H '#{k}: #{v}'" }.join(' ')
   end
 end

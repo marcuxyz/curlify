@@ -4,6 +4,8 @@ source 'https://rubygems.org'
 
 # gem "rails"
 
+gem 'faraday', '~> 2.9'
+
 gem 'rspec', '~> 3.12', group: :test
 
 gem 'rubocop', '~> 1.56', groups: %i[development test], require: false
