@@ -26,11 +26,7 @@ request = Faraday.new.build_request(:post) do |req|
   req.url 'http://127.0.0.1'
 end
 
-curlify = Curlify.new(request)
-
-puts curlify
-
-# "curl -X POST -H 'User-Agent: Faraday v2.9.0'  http://127.0.0.1"
+Curlify.new(request).to_curl # "curl -X POST -H 'User-Agent: Faraday v2.9.0'  http://127.0.0.1"
 ```
 
 ## Usage with net/http
@@ -47,11 +43,7 @@ uri = URI('https://httpbin.org/post')
 request = Net::HTTP::Post.new(uri, { 'content-type': 'application/json' })
 request.body = { title: 'Ruby is great :)' }.to_json
 
-curlify = Curlify.new(request)
-
-puts curlify.to_curl
-
-# curl -X POST -H 'content-type: application/json' -H 'accept-encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3' -H 'accept: */*' -H 'user-agent: Ruby' -H 'host: httpbin.org' -d '{"title":"Ruby is great :)"}' https://httpbin.org/post
+Curlify.new(request).to_curl # curl -X POST -H 'content-type: application/json' -H 'accept-encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3' -H 'accept: */*' -H 'user-agent: Ruby' -H 'host: httpbin.org' -d '{"title":"Ruby is great :)"}' https://httpbin.org/post
 ```
 
 Performing this curl command, we can see the following result:
