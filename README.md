@@ -14,11 +14,30 @@ or bundle:
 $ bundle add curlify
 ```
 
-## Usage
+## Usage with faraday
 
-Import `curlify`, `uri` and `net/http` gems and execute curlify, see:
+Import `curlify` and `faraday` and perform curlify, see:
 
-```python
+```ruby
+require 'faraday'
+require 'curlify'
+
+request = Faraday.new.build_request(:post) do |req|
+  req.url 'http://127.0.0.1'
+end
+
+curlify = Curlify.new(request)
+
+puts curlify
+
+# "curl -X POST -H 'User-Agent: Faraday v2.9.0'  http://127.0.0.1"
+```
+
+## Usage with net/http
+
+Import `curlify`, `uri` and `net/http` and perform curlify, see:
+
+```ruby
 require 'json'
 require 'uri'
 require 'net/http'
@@ -35,7 +54,7 @@ puts curlify.to_curl
 # curl -X POST -H 'content-type: application/json' -H 'accept-encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3' -H 'accept: */*' -H 'user-agent: Ruby' -H 'host: httpbin.org' -d '{"title":"Ruby is great :)"}' https://httpbin.org/post
 ```
 
-Running this command generated, we have the following result:
+Performing this curl command, we can see the following result:
 
 ```bash
 {
