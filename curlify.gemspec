@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'curlify'
-  s.version     = '1.0.2'
+  s.version     = '1.1.0'
   s.summary     = 'Hola!'
   s.description = 'The gem convert python requests object in curl command.'
   s.authors     = ['Marcus Almeida']
