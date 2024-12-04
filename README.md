@@ -1,4 +1,4 @@
-The gem convert ruby requests(net/http) into curl command.
+The gem converts ruby requests to curl
 
 ## Installation
 
