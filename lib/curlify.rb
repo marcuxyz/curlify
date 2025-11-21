@@ -14,18 +14,23 @@ class Curlify
   end
 
   def to_curl
-    string = curl_request
-    string += '--insecure ' unless verify
-    string += '--compressed' if compressed
-
-    copy_to_clipboard(string)
-    string
+    command = build_curl_command
+    copy_to_clipboard(command)
+    command
   end
 
   private
 
+  def build_curl_command
+    [
+      curl_request,
+      verify ? nil : '--insecure',
+      compressed ? '--compressed' : nil
+    ].compact.join(' ')
+  end
+
   def curl_request
-    "curl -X #{http_method.upcase} #{headers} #{body} #{url} "
+    "curl -X #{http_method.upcase} #{headers} #{body} #{url}".strip
   end
 
   def headers
