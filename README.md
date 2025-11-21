@@ -46,6 +46,25 @@ request.body = { title: 'Ruby is great :)' }.to_json
 Curlify.new(request).to_curl # curl -X POST -H 'content-type: application/json' -H 'accept-encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3' -H 'accept: */*' -H 'user-agent: Ruby' -H 'host: httpbin.org' -d '{"title":"Ruby is great :)"}' https://httpbin.org/post
 ```
 
+## Clipboard support
+
+Curlify can copy the generated curl command directly to the operating system clipboard. To enable this behavior, pass `clipboard: true` when creating the `Curlify` instance. The method still returns the curl string.
+
+Supported platforms:
+- macOS: uses `pbcopy`
+- Windows: uses `clip`
+- Linux: uses `xclip` (must be installed and available in `PATH`)
+
+Example:
+
+```ruby
+# copy to clipboard and return the curl string
+Curlify.new(request, clipboard: true).to_curl
+```
+
+If `xclip` is not available on Linux, Curlify will print a warning: `Curlify Warning: 'xclip' is required for clipboard support on Linux.`
+
+
 Performing this curl command, we can see the following result:
 
 ```bash

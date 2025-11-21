@@ -20,9 +20,8 @@ describe Curlify do
     CURL
   end
 
-  before { request.body = payload }
-
   describe 'must transform request into curl command' do
+    before { request.body = payload }
     context 'when is a GET request' do
       let(:request) { Net::HTTP::Get.new(uri, { 'content-type': 'application/json' }) }
       let(:body)    { nil }
@@ -91,6 +90,122 @@ describe Curlify do
       end
 
       it { expect(context.to_curl).to eq response.strip }
+    end
+  end
+
+  describe '#copy_to_clipboard' do
+    let(:request) { Net::HTTP::Get.new(uri, headers) }
+    let(:payload) { nil }
+
+    before { request.body = payload }
+
+    context 'when clipboard is disabled' do
+      let(:context) { described_class.new(request, clipboard: false) }
+
+      it 'does not copy to clipboard' do
+        expect(IO).not_to receive(:popen)
+        context.to_curl
+      end
+    end
+
+    context 'when clipboard is enabled' do
+      let(:context) { described_class.new(request, clipboard: true) }
+
+      context 'on macOS' do
+        before { stub_const('RUBY_PLATFORM', 'darwin') }
+
+        it 'uses pbcopy command' do
+          mock_io = double
+          allow(mock_io).to receive(:<<)
+          allow(IO).to receive(:popen).and_yield(mock_io)
+          context.to_curl
+          expect(IO).to have_received(:popen).with('pbcopy', 'w')
+        end
+      end
+
+      context 'on Windows' do
+        before { stub_const('RUBY_PLATFORM', 'mingw') }
+
+        it 'uses clip command' do
+          mock_io = double
+          allow(mock_io).to receive(:<<)
+          allow(IO).to receive(:popen).and_yield(mock_io)
+          context.to_curl
+          expect(IO).to have_received(:popen).with('clip', 'w')
+        end
+      end
+
+      context 'on Linux' do
+        before { stub_const('RUBY_PLATFORM', 'linux') }
+
+        context 'when xclip is available' do
+          before { allow_any_instance_of(Curlify).to receive(:system).and_return(true) }
+
+          it 'uses xclip command' do
+            mock_io = double
+            allow(mock_io).to receive(:<<)
+            allow(IO).to receive(:popen).and_yield(mock_io)
+            context.to_curl
+            expect(IO).to have_received(:popen).with('xclip -selection clipboard', 'w')
+          end
+        end
+
+        context 'when xclip is not available' do
+          before { allow_any_instance_of(Curlify).to receive(:system).and_return(false) }
+
+          it 'displays warning message' do
+            expect_any_instance_of(Curlify).to receive(:warn).with("Curlify Warning: 'xclip' is required for clipboard support on Linux.")
+            context.to_curl
+          end
+        end
+      end
+    end
+  end
+
+  describe '#build_curl_command' do
+    let(:request) { Net::HTTP::Get.new(uri, headers) }
+    let(:context) { described_class.new(request, compressed: compressed, verify: verify) }
+
+    context 'when verify is true and compressed is false' do
+      let(:verify) { true }
+      let(:compressed) { false }
+
+      it 'does not include --insecure or --compressed' do
+        result = context.to_curl
+        expect(result).not_to include('--insecure')
+        expect(result).not_to include('--compressed')
+      end
+    end
+
+    context 'when verify is false' do
+      let(:verify) { false }
+      let(:compressed) { false }
+
+      it 'includes --insecure flag' do
+        result = context.to_curl
+        expect(result).to include('--insecure')
+      end
+    end
+
+    context 'when compressed is true' do
+      let(:verify) { true }
+      let(:compressed) { true }
+
+      it 'includes --compressed flag' do
+        result = context.to_curl
+        expect(result).to include('--compressed')
+      end
+    end
+
+    context 'when both verify is false and compressed is true' do
+      let(:verify) { false }
+      let(:compressed) { true }
+
+      it 'includes both --insecure and --compressed flags' do
+        result = context.to_curl
+        expect(result).to include('--insecure')
+        expect(result).to include('--compressed')
+      end
     end
   end
 end
