@@ -1,16 +1,19 @@
 # frozen_string_literal: true
 
 require 'faraday'
-require 'byebug'
+
+require_relative 'settings'
 
 class Curlify
-  attr_reader :request, :verify, :compressed, :clipboard
+  attr_reader :request
 
-  def initialize(request, compressed: false, verify: true, clipboard: false)
+  def initialize(request)
     @request = request
-    @compressed = compressed
-    @verify = verify
-    @clipboard = clipboard
+
+    Settings.call.each do |key, value|
+      instance_variable_set("@#{key}", value)
+      define_singleton_method(key) { instance_variable_get("@#{key}") }
+    end
   end
 
   def to_curl

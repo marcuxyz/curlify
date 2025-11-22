@@ -1,11 +1,11 @@
 Gem::Specification.new do |s|
   s.name        = 'curlify'
-  s.version     = '1.2.0'
+  s.version     = '2.0.0'
   s.summary     = 'Convert Ruby HTTP request objects into curl commands'
   s.description = 'Convert Ruby HTTP request and client objects into their equivalent curl command. Useful for debugging and sharing HTTP requests.'
   s.authors     = ['Marcus Almeida']
   s.email       = 'mpereirassa@gmail.com'
-  s.files       = ['lib/curlify.rb']
+  s.files       = ['lib/curlify.rb', 'lib/settings.rb']
   s.homepage    =
     'https://rubygems.org/gems/curlify'
   s.license = 'MIT'
