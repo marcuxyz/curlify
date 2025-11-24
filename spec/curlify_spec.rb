@@ -4,6 +4,7 @@ require 'net/http'
 require 'faraday'
 
 require './lib/curlify'
+require './lib/settings'
 
 describe Curlify do
   let(:context) { described_class.new(request) }
@@ -20,8 +21,17 @@ describe Curlify do
     CURL
   end
 
+  before do
+    allow(Settings).to receive(:call).and_return(
+      {
+        clipboard: false,
+        verify: true,
+        compressed: false
+      }
+    )
+  end
+
   describe 'must transform request into curl command' do
-    before { request.body = payload }
     context 'when is a GET request' do
       let(:request) { Net::HTTP::Get.new(uri, { 'content-type': 'application/json' }) }
       let(:body)    { nil }
@@ -36,6 +46,8 @@ describe Curlify do
       let(:payload) { { name: 'John' }.to_json }
       let(:body)    { "-d '#{payload}'" }
       let(:method)  { request.method }
+
+      before { request.body = payload }
 
       it { expect(context.to_curl).to eq response.strip }
     end
@@ -86,6 +98,7 @@ describe Curlify do
         Faraday.new.build_request(:post) do |req|
           req.url 'http://127.0.0.1'
           req.headers = headers
+          req.body = payload
         end
       end
 
@@ -99,8 +112,8 @@ describe Curlify do
 
     before { request.body = payload }
 
-    context 'when clipboard is disabled' do
-      let(:context) { described_class.new(request, clipboard: false) }
+    context 'when clipboard is disabled by default' do
+      let(:context) { described_class.new(request) }
 
       it 'does not copy to clipboard' do
         expect(IO).not_to receive(:popen)
@@ -109,7 +122,18 @@ describe Curlify do
     end
 
     context 'when clipboard is enabled' do
-      let(:context) { described_class.new(request, clipboard: true) }
+      let(:context) { described_class.new(request) }
+      let(:expected_params) do
+        {
+          clipboard: true,
+          verify: false,
+          compressed: false
+        }
+      end
+
+      before do
+        allow(Settings).to receive(:call).and_return(expected_params)
+      end
 
       context 'on macOS' do
         before { stub_const('RUBY_PLATFORM', 'darwin') }
@@ -164,11 +188,19 @@ describe Curlify do
 
   describe '#build_curl_command' do
     let(:request) { Net::HTTP::Get.new(uri, headers) }
-    let(:context) { described_class.new(request, compressed: compressed, verify: verify) }
+    let(:context) { described_class.new(request) }
+    let(:expected_params) do
+      {
+        clipboard: false,
+        verify: true,
+        compressed: false
+      }
+    end
 
     context 'when verify is true and compressed is false' do
-      let(:verify) { true }
-      let(:compressed) { false }
+      before do
+        allow(Settings).to receive(:call).and_return(expected_params)
+      end
 
       it 'does not include --insecure or --compressed' do
         result = context.to_curl
@@ -177,9 +209,18 @@ describe Curlify do
       end
     end
 
-    context 'when verify is false' do
-      let(:verify) { false }
-      let(:compressed) { false }
+    context 'when verify and compressed are falsey' do
+      let(:expected_params) do
+        {
+          clipboard: false,
+          verify: false,
+          compressed: false
+        }
+      end
+
+      before do
+        allow(Settings).to receive(:call).and_return(expected_params)
+      end
 
       it 'includes --insecure flag' do
         result = context.to_curl
@@ -188,8 +229,18 @@ describe Curlify do
     end
 
     context 'when compressed is true' do
-      let(:verify) { true }
-      let(:compressed) { true }
+      let(:context) { described_class.new(request) }
+      let(:expected_params) do
+        {
+          clipboard: false,
+          verify: true,
+          compressed: true
+        }
+      end
+
+      before do
+        allow(Settings).to receive(:call).and_return(expected_params)
+      end
 
       it 'includes --compressed flag' do
         result = context.to_curl
@@ -198,8 +249,17 @@ describe Curlify do
     end
 
     context 'when both verify is false and compressed is true' do
-      let(:verify) { false }
-      let(:compressed) { true }
+      let(:expected_params) do
+        {
+          clipboard: false,
+          verify: false,
+          compressed: true
+        }
+      end
+
+      before do
+        allow(Settings).to receive(:call).and_return(expected_params)
+      end
 
       it 'includes both --insecure and --compressed flags' do
         result = context.to_curl
