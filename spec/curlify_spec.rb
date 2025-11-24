@@ -209,7 +209,7 @@ describe Curlify do
       end
     end
 
-    context 'when verify and compressed are falsely' do
+    context 'when verify and compressed are falsey' do
       let(:expected_params) do
         {
           clipboard: false,

@@ -8,6 +8,17 @@ class Settings
   private
 
   def params
-    YAML.load_file(File.join('config', 'settings.yml'))
+    YAML.safe_load(
+      read_file,
+      permitted_classes: [],
+      permitted_symbols: [],
+      aliases: true
+    )
+  end
+
+  def read_file
+    File.read(
+      File.join('config', 'settings.yml')
+    )
   end
 end

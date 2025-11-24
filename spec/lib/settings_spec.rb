@@ -1,6 +1,6 @@
 require './lib/settings'
 
-RSpec.describe '.call' do
+RSpec.describe Settings do
   context 'when settings file exists' do
     let(:expected_settings) do
       {
